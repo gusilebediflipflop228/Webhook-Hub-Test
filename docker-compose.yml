@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  api:
+    build:
+      context: ./api
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    env_file: .env
+    volumes:
+      - ./api/data:/app/data
+
+  web:
+    build:
+      context: ./web
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
+    env_file: .env
+
+  subscriber:
+    build:
+      context: ./api
+    command: node scripts/mock-subscriber.mjs
+    ports:
+      - "${SUBSCRIBER_PORT}:${SUBSCRIBER_PORT}"
+    env_file: .env

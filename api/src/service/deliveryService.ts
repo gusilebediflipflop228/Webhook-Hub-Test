@@ -23,14 +23,16 @@ export async function deliverWebhook(eventId: string) {
         return;
     }
 
-    console.log(`[DEBUG] Все ок, адрес подписчика: ${source.subscriberUrl}`);
+    const targetUrl = source.subscriberUrl.replace('localhost', 'subscriber');
+
+    console.log(`[DEBUG] Все ок, адрес подписчика: ${targetUrl}`);
 
     const delays = [1000, 3000, 9000];
 
     for (let i = 0; i <= delays.length; i++) {
         try {
             console.log(`опытка ${i + 1} для ${eventId}`); // дебаг
-            const response = await fetch(source.subscriberUrl, {
+            const response = await fetch(targetUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

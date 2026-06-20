@@ -4,12 +4,14 @@ import {readEvents, saveEvents, updateEvent} from './service/eventsService';
 import {randomUUID} from 'crypto';
 import {readFile, writeFile} from 'fs/promises';
 import path from 'path';
+import cors from 'cors';
 
 const DB_PATH = path.join(__dirname, '..', 'data', 'sources.json'); // путь к файлу бд
 const app = express();
 app.use(express.json()); // парсинг JSON тела запроса(все запросы)
+app.use(cors());
 
-const PORT = 4002;
+const PORT = process.env.API_PORT || 4002;
 app.post('/api/sources', async (req: Request, res: Response) => {
 
     const {name, secret, subscriberUrl} = req.body; // извлечение полей
@@ -36,7 +38,7 @@ app.post('/api/sources', async (req: Request, res: Response) => {
         res.status(201).json({
             id: newSource.id,
             name: newSource.name,
-            ingestUrl: `http://localhost:${PORT}/webhooks/${newSource.id}`,
+            subscriberUrl: `http://localhost:${PORT}/webhooks/${newSource.id}`,
             hasSecret: !!newSource.secret // преобразование в бул
         });
     } catch (error) {

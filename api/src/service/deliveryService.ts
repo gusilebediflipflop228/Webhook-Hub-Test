@@ -4,13 +4,13 @@ import path from 'path';
 
 const SOURCES_DB = path.join(__dirname, '../../data/sources.json');
 export async function deliverWebhook(eventId: string) {
-    console.log(`Начало доставки для события: ${eventId}`); // дебаг
+    console.log(`--- [DEBUG] Запуск доставки для ${eventId} ---`);
 
     const events = await readEvents();
     const event = events.find((e: any) => e.id === eventId);
 
     if (!event) {
-        console.log(`Событие ${eventId} не найдено!`); // дебаг
+        console.log(`[DEBUG] ОШИБКА: Событие ${eventId} не найдено в файле!`);
         return;
     }
 
@@ -19,9 +19,11 @@ export async function deliverWebhook(eventId: string) {
     const source = sources.find((s: any) => s.id === event.sourceId);
 
     if (!source || !source.subscriberUrl) {
-        console.log(`Источник или URL не найдены`);
+        console.log(`[DEBUG] ОШИБКА: Источник не найден или нет subscriberUrl. ID источника: ${event.sourceId}`);
         return;
     }
+
+    console.log(`[DEBUG] Все ок, адрес подписчика: ${source.subscriberUrl}`);
 
     const delays = [1000, 3000, 9000];
 

@@ -1,6 +1,17 @@
 # Webhook Hub
 
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+
 Система для приема, хранения и надежной доставки вебхуков с механизмом повторных попыток.
+
+Технологический стек
+- Backend: Node.js + TypeScript + Express
+- Frontend: Next.js + Tailwind CSS
+- Storage: JSON (file-based)
 
 ## Подготовка конфигурации:
 В корне проекта создайте файл .env, используя .env.example в качестве шаблона:
@@ -39,9 +50,9 @@ node api/scripts/mock-subscriber.mjs
 ```
 2. Отправка вебхука:
 Отправьте POST-запрос на ваш API, пример:
-URL: POST http://localhost:4002/api/webhooks/{sourceId}
-Header: x-webhook-secret: super-secret
-Body (JSON):
+-URL: POST http://localhost:4002/api/webhooks/{sourceId}
+-Header: x-webhook-secret: super-secret
+-Body (JSON):
 ```
 {
     "orderId": 12345,

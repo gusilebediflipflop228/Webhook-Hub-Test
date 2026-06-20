@@ -1,0 +1,14 @@
+[
+  {
+    "id": "acdb8607-3677-46d0-b224-7a2b01dcb5f3",
+    "name": "Бэмс",
+    "secret": "12345",
+    "subscriberUrl": null
+  },
+  {
+    "id": "123b8b32-6e78-4b8b-89db-4cb21d4df96d",
+    "name": "payments",
+    "secret": "optional-shared-secret",
+    "subscriberUrl": "http://localhost:5001/deliver"
+  }
+]

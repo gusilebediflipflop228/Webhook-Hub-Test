@@ -1,6 +1,8 @@
-import express, { Request, Response } from 'express';
-import { randomUUID } from 'crypto';
-import { readFile, writeFile } from 'fs/promises';
+import express, {Request, Response} from 'express';
+import { deliverWebhook } from './service/deliveryService';
+import { readEvents, saveEvents } from './service/eventsService';
+import {randomUUID} from 'crypto';
+import {readFile, writeFile} from 'fs/promises';
 import path from 'path';
 
 const DB_PATH = path.join(__dirname, '..', 'data', 'sources.json'); // путь к файлу бд
@@ -10,10 +12,9 @@ app.use(express.json()); // парсинг JSON тела запроса(все �
 const PORT = 4002;
 app.post('/api/sources', async (req: Request, res: Response) => {
 
-    const { name, secret, subscriberUrl } = req.body; // извлечение полей
-
+    const {name, secret, subscriberUrl} = req.body; // извлечение полей
     if (!name) {
-        return res.status(400).json({ error: "Name is required" });
+        return res.status(400).json({error: "Name is required"});
     }
 
     try {
@@ -40,10 +41,48 @@ app.post('/api/sources', async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error("Ошибка при создании источника:", error);
-        res.status(500).json({ error: "Failed to save source" });
+        res.status(500).json({error: "Failed to save source"});
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`API сервер запущен на порту ${PORT}`);
+app.post('/api/webhooks/:sourceId', async (req: Request, res: Response) => {
+    const {sourceId} = req.params;
+    const secretHeader = req.headers['x-webhook-secret'];
+
+    const fileContent = await readFile(DB_PATH, 'utf-8');
+    const sources = fileContent ? JSON.parse(fileContent) : [];
+    const source = sources.find((s: any) => s.id === sourceId);
+
+    if (!source) return res.status(404).json({error: "Source not found"});
+
+    if (source.secret) {
+        if (secretHeader !== source.secret) {
+            return res.status(401).json({error: "UNAUTHORIZED", code: "UNAUTHORIZED"});
+        }
+    }
+
+    const event = {
+        id: randomUUID(),
+        sourceId,
+        headers: {
+            "content-type": req.headers["content-type"],
+            "user-agent": req.headers["user-agent"] || null,
+            "x-webhook-secret": req.headers["x-webhook-secret"] ? "***" : null
+        },
+        body: req.body,
+        receivedAt: new Date().toISOString(),
+        delivery: {
+            status: "pending",
+            attempts: [],
+            lastError: null }
+    };
+
+    const events = await readEvents();
+    events.push(event);
+    await saveEvents(events);
+
+    res.status(202).json({ "eventId" : event.id, "status" : "received" });
+    deliverWebhook(event.id).catch(err => console.error("Фоновая ошибка доставки:", err));
 });
+
+app.listen(PORT, () => console.log(`Сервер на ${PORT}`));

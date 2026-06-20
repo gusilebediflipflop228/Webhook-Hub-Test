@@ -1,0 +1,21 @@
+[
+  {
+    "id": "219d2cce-eb05-4ca0-941c-cf512bb77ef9",
+    "sourceId": "e9aacd5c-fde6-4c0a-8554-0b8a980361fb",
+    "headers": {
+      "content-type": "application/json",
+      "user-agent": "PostmanRuntime/7.51.1",
+      "x-webhook-secret": "***"
+    },
+    "body": {
+      "orderId": 12345,
+      "amount": 500
+    },
+    "receivedAt": "2026-06-20T08:44:08.189Z",
+    "delivery": {
+      "status": "failed",
+      "attempts": [],
+      "lastError": "fetch failed"
+    }
+  }
+]

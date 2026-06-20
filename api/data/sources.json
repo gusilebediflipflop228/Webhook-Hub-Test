@@ -4,5 +4,11 @@
     "name": "payments",
     "secret": "optional-shared-secret",
     "subscriberUrl": "http://localhost:5001/deliver"
+  },
+  {
+    "id": "6f5ff203-2947-4a09-9656-55a104820fb3",
+    "name": "payments",
+    "secret": "optional-shared-secret",
+    "subscriberUrl": "http://localhost:5001/deliver"
   }
 ]

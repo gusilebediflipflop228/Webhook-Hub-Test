@@ -1,6 +1,6 @@
 import express, {Request, Response} from 'express';
-import { deliverWebhook } from './service/deliveryService';
-import { readEvents, saveEvents } from './service/eventsService';
+import {deliverWebhook} from './service/deliveryService';
+import {readEvents, saveEvents, updateEvent} from './service/eventsService';
 import {randomUUID} from 'crypto';
 import {readFile, writeFile} from 'fs/promises';
 import path from 'path';
@@ -19,7 +19,7 @@ app.post('/api/sources', async (req: Request, res: Response) => {
 
     try {
         const fileContent = await readFile(DB_PATH, 'utf-8'); // чтение файла бд
-        const sources = fileContent ? JSON.parse(fileContent) : []; // если файл пустой, создаем пустой массив
+        const sources = fileContent ? JSON.parse(fileContent) : []; // если файл пустой: массив - устой
 
         const newSource = {
             id: randomUUID(),
@@ -31,7 +31,7 @@ app.post('/api/sources', async (req: Request, res: Response) => {
         sources.push(newSource);
         await writeFile(DB_PATH, JSON.stringify(sources, null, 2));
 
-        console.log(`Создан источник: ${name} с ID: ${newSource.id}`); // для дебага логирование
+        console.log(`Создан источник: ${name} с ID: ${newSource.id}`); // для дебага
 
         res.status(201).json({
             id: newSource.id,
@@ -83,6 +83,50 @@ app.post('/api/webhooks/:sourceId', async (req: Request, res: Response) => {
 
     res.status(202).json({ "eventId" : event.id, "status" : "received" });
     deliverWebhook(event.id).catch(err => console.error("Фоновая ошибка доставки:", err));
+});
+
+app.get('/api/events', async (req: Request, res: Response) => {
+    const { sourceId, status, page = '1', limit = '20' } = req.query;
+    let events = await readEvents();
+
+    if (sourceId) events = events.filter((e: any) => e.sourceId === sourceId);
+    if (status) events = events.filter((e: any) => e.delivery.status === status);
+
+    const p = parseInt(page as string);
+    const l = parseInt(limit as string);
+    const total = events.length;
+    const items = events.slice((p - 1) * l, p * l);
+
+    res.json({ items, page: p, limit: l, total });
+});
+
+app.get('/api/events/:id', async (req: Request, res: Response) => {
+    const events = await readEvents();
+    const event = events.find((e: any) => e.id === req.params.id);
+
+    if (!event) return res.status(404).json({error: "Event not found"});
+    res.json(event);
+});
+
+app.post('/api/events/:id/retry', async (req: Request, res: Response) => {
+    const eventId = req.params.id as string;
+    const events = await readEvents();
+    const event = events.find((e: any) => e.id === eventId);
+
+    if (!event) return res.status(404).json({ error: "Event not found" });
+    if (event.delivery.status === 'pending') return res.status(400).json({ error: "Already pending" });
+
+    await updateEvent(eventId, (ev) => ({
+        ...ev,
+        delivery: {
+            ...ev.delivery,
+            status: 'pending',
+            lastError: null
+        }
+    }));
+
+    deliverWebhook(eventId).catch(console.error);
+    res.status(202).json({ message: "Retry started" });
 });
 
 app.listen(PORT, () => console.log(`Сервер на ${PORT}`));

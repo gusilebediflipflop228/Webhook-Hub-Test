@@ -50,9 +50,9 @@ node api/scripts/mock-subscriber.mjs
 ```
 2. Отправка вебхука:
 Отправьте POST-запрос на ваш API, пример:
--URL: POST http://localhost:4002/api/webhooks/{sourceId}
--Header: x-webhook-secret: super-secret
--Body (JSON):
+- URL: POST http://localhost:4002/api/webhooks/{sourceId}
+- Header: x-webhook-secret: super-secret
+- Body (JSON):
 ```
 {
     "orderId": 12345,

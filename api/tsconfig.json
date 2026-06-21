@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ES2022", // версия
+    "target": "ES2022",
     "module": "commonjs",
     "outDir": "./dist", // папка для скомпилированных файлов
     "rootDir": "./src", // папка с исходными файлами
     "strict": true, // типизация(ошибки)
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node"]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "scripts/**/*"]
 }

@@ -18,6 +18,7 @@
 ## Подготовка конфигурации:
 В корне проекта создайте файл .env, используя .env.example в качестве шаблона:
 - API_PORT — порт, на котором работает ваш бэкенд.
+- WEB_PORT - порт, на котором работае ваш бекенд.
 - NEXT_PUBLIC_API_URL — адрес API для фронтенда.
 - SUBSCRIBER_PORT — порт, на котором запускается mock-подписчик.
 
@@ -44,7 +45,7 @@ docker-compose up --build
 2. Отправка вебхука:
    Отправьте POST-запрос на ваш API, пример:
 - URL: POST http://localhost:4002/api/webhooks/{sourceId}
-- Header: x-webhook-secret: super-secret
+- Header: x-webhook-secret: optional-shared-secret
 - Body (JSON):
 ```
 {

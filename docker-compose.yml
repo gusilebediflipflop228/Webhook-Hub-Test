@@ -7,7 +7,7 @@ services:
       - "${API_PORT}:${API_PORT}"
     env_file: .env
     volumes:
-      - ./api/data:/app/data
+      - db_data:/app/data
 
   web:
     build:
@@ -19,7 +19,11 @@ services:
   subscriber:
     build:
       context: ./api
-    command: node scripts/mock-subscriber.mjs
+    volumes:
+      - db_data:/app/data
+    command: npx ts-node /app/scripts/mock-subscriber.ts
     ports:
       - "${SUBSCRIBER_PORT}:${SUBSCRIBER_PORT}"
     env_file: .env
+volumes:
+  db_data:

@@ -1,10 +1,13 @@
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
+import {writeFile} from 'fs/promises';
+import {existsSync, readFileSync} from "fs";
 
-const EVENTS_DB = path.join(__dirname, '..', '..', 'data', 'events.json');
+const EVENTS_DB = '/app/data/events.json';
 
 export async function readEvents() {
-    const data = await readFile(EVENTS_DB, 'utf-8');
+    if (!existsSync(EVENTS_DB)) {
+        return [];
+    }
+    const data = readFileSync(EVENTS_DB, 'utf-8');
     return data ? JSON.parse(data) : [];
 }
 

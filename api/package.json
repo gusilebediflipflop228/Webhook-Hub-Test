@@ -12,6 +12,8 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "async-mutex": "^0.5.0",
+    "axios": "^1.18.0",
     "cors": "^2.8.6",
     "express": "^5.2.1"
   },

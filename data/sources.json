@@ -1,0 +1,20 @@
+[
+  {
+    "id": "70f53e13-bfd1-499e-b22e-9fca33971010",
+    "name": "payments",
+    "secret": "optional-shared-secret",
+    "subscriberUrl": "http://localhost:5001/deliver"
+  },
+  {
+    "id": "c6349f7e-f41b-4757-9774-672cfc3e3bfc",
+    "name": "payments",
+    "secret": "optional-shared-secret",
+    "subscriberUrl": "http://localhost:5001/deliver"
+  },
+  {
+    "id": "20bb3639-ec0f-4c72-bd2e-c0b5fbb92bbe",
+    "name": "payments",
+    "secret": "optional-shared-secret",
+    "subscriberUrl": "http://localhost:5001/deliver"
+  }
+]

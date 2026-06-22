@@ -1,83 +1,35 @@
-import {readEvents, updateEvent} from './eventsService';
+import { WebhookEvent } from '../types';
+import axios from 'axios';
 import crypto from 'crypto';
-import {readJsonFile} from "./readJson";
 
-const SOURCES_DB = '/app/data/sources.json';
-
-export async function deliverWebhook(eventId: string) {
-    console.log(`[DEBUG] Запуск доставки для ${eventId}`);
-
-    const events = await readEvents();
-    const event = events.find((e: any) => e.id === eventId);
-    if (!event) return;
-
-    const sources = await readJsonFile(SOURCES_DB);
-    const source = sources.find((s: any) => s.id === event.sourceId);
-
-    if (!source || !source.subscriberUrl) {
-        console.log(`[DEBUG] ОШИБКА: Источник не найден или нет subscriberUrl.`);
-        return;
-    }
-
-    const targetUrl = source.subscriberUrl.replace('localhost', 'subscriber');
-    console.log(`[DEBUG] Все ок, адрес подписчика: ${targetUrl}`);
-
-    const payload = {
-        eventId: event.id,
-        sourceId: event.sourceId,
-        payload: event.body,
-        receivedAt: event.receivedAt
-    };
-    const bodyString = JSON.stringify(payload);
-
-    let signature = '';
-    if (source.secret) {
-        signature = crypto
-            .createHmac('sha256', source.secret)
-            .update(bodyString)
-            .digest('hex');
-        console.log(`[DEBUG] Сгенерирована сигнатура для ${eventId}: ${signature}`);
-    }
-
-    const delays = [1000, 3000, 9000];
-
-    for (let i = 0; i <= delays.length; i++) {
+export const deliveryService = {
+    async send(event: WebhookEvent, subscriberUrl: string, secret: string | null): Promise<{ status: number, error?: string }> {
         try {
-            console.log(`Попытка ${i + 1} для ${eventId}`);
-            const response = await fetch(targetUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Signature': signature
-                },
-                body: bodyString
+            const headers: Record<string, string> = { 'Content-Type': 'application/json',
+                'x-source-id': event.sourceId};
+            const targetUrl = subscriberUrl.replace('localhost', 'subscriber');
+
+            if (secret) {
+                const signature = crypto
+                    .createHmac('sha256', secret)
+                    .update(JSON.stringify(event.payload))
+                    .digest('hex');
+                headers['X-Signature'] = signature;
+            }
+
+            console.log('[DEBUG] ОТПРАВЛЯЮ ЗАГОЛОВКИ:', headers);
+
+            const response = await axios.post(targetUrl, event.payload, {
+                headers,
+                timeout: 5000
             });
 
-            if (response.ok) {
-                await updateEvent(eventId, (ev) => ({
-                    ...ev,
-                    delivery: {
-                        status: 'delivered',
-                        attempts: [...ev.delivery.attempts,
-                            { at: new Date().toISOString(), statusCode: response.status, error: null }],
-                        lastError: null
-                    }
-                }));
-                console.log(`Успешно доставлено!`);
-                return;
-            }
-            throw new Error(`Status ${response.status}`);
-        } catch (err: any) {
-            console.error(`Ошибка попытки ${i + 1}: ${err.message}`);
-
-            if (i === delays.length) {
-                await updateEvent(eventId, (ev) => ({
-                    ...ev,
-                    delivery: { ...ev.delivery, status: 'failed', lastError: err.message }
-                }));
-            } else {
-                await new Promise(resolve => setTimeout(resolve, delays[i]));
-            }
+            return { status: response.status };
+        } catch (error: any) {
+            return {
+                status: error.response?.status || 500,
+                error: error.message
+            };
         }
     }
-}
+};
